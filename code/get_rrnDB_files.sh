@@ -9,4 +9,5 @@ archive=$1
 echo "$archive"
 curl -kL https://rrndb.umms.med.umich.edu/static/download/"$archive".zip -o data/raw/"$archive".zip
 unzip -n -d data/raw data/raw/"$archive".zip
+touch data/raw/"$archive"
 rm data/raw/"$archive".zip
