@@ -7,3 +7,5 @@ Developed over a series of *Code Club* episodes led by Pat Schloss ([Riffomonas]
 
 ### Dependencies:
 - mothur [v.1.48.0](https://github.com/mothur/mothur/releases/tag/v1.48.0)
+- unzip
+- gzip

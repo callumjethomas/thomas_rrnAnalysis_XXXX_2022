@@ -35,7 +35,7 @@ echo "start: $start"
 echo "end: $end"
 mkdir -p $path
 
-code/mothur/mothur "#pcr.seqs(fasta=data/raw/rrnDB-5.8_16S_rRNA.align, start=$start, end=$end, outputdir=$path); filter.seqs(vertical=TRUE)"
+code/mothur/mothur.exe "#pcr.seqs(fasta=data/raw/rrnDB-5.8_16S_rRNA.align, start=$start, end=$end, outputdir=$path); filter.seqs(vertical=TRUE)"
 
 # if mothur runs successfully, touch the files that might not be generated
 # in pcr.seqs because the seqs spanned desired region's coordinates
