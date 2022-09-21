@@ -21,7 +21,7 @@ elif [[ "$region" = v34 ]]
 then
   start=6428
   end=23444
-elif [[ "$region" = v45] ]]
+elif [[ "$region" = v45 ]]
 then
   start=13862
   end=27659
