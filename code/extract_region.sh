@@ -41,6 +41,7 @@ code/mothur/mothur.exe "#pcr.seqs(fasta=data/raw/rrnDB-5.8_16S_rRNA.align, start
 # in pcr.seqs because the seqs spanned desired region's coordinates
 if [[ $? -eq 0 ]]
 then
+  sed "s/^\.*/-/" $path/rrnDB-5.8_16S_rRNA.pcr.filter.fasta > $path/rrnDB-5.8_16S_rRNA.pcr.filter.temp.fasta
   touch $path/rrnDB-5.8_16S_rRNA.bad.accnos
   touch $path/rrnDB-5.8_16S_rRNA.scrap.pcr.align
 else
@@ -49,10 +50,11 @@ else
 fi
 
 # clean up file names
-mv $path/rrnDB-5.8_16S_rRNA.pcr.filter.fasta $filename
+mv $path/rrnDB-5.8_16S_rRNA.pcr.filter.temp.fasta $filename
 mv $path/rrnDB-5.8_16S_rRNA.bad.accnos $path/rrnDB.bad.accnos
 
 # garbage collection
+rm $path/rrnDB-5.8_16S_rRNA.pcr.filter.fasta
 rm $path/rrnDB-5.8_16S_rRNA.pcr.align
 rm $path/rrnDB-5.8_16S_rRNA.scrap.pcr.align
 rm $path/rrnDB-5.filter
