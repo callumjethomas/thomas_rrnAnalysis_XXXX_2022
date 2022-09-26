@@ -43,6 +43,14 @@ if [[ $? -eq 0 ]]
 then
   # replace any . with a - in lines that DON'T start with a >
   sed '/^[^>]/ s/\./-/g' $path/rrnDB-5.8_16S_rRNA.pcr.filter.fasta > $path/rrnDB-5.8_16S_rRNA.pcr.filter.temp.fasta
+
+  TEST=`grep -v "^>" $path/rrnDB-5.8_16S_rRNA.pcr.filter.temp.fasta | grep -c "\."`
+  if [[ $TEST -ne 0 ]]
+  then
+    echo "FAIL: Alignment file contains .'s."
+    exit 1
+  fi
+
   touch $path/rrnDB-5.8_16S_rRNA.bad.accnos
   touch $path/rrnDB-5.8_16S_rRNA.scrap.pcr.align
 else
