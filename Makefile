@@ -29,8 +29,13 @@ data/raw/rrnDB-5.8_16S_rRNA.align : code/align_sequences.sh\
 				code/mothur/mothur.exe
 	./code/align_sequences.sh
 
-data/%/rrnDB.align data/%/rrnDB.bad.accnos: code/extract_region.sh\
+data/%/rrnDB.align data/%/rrnDB.bad.accnos : code/extract_region.sh\
 					data/raw/rrnDB-5.8_16S_rRNA.align\
 					code/mothur/mothur.exe
 	./code/extract_region.sh $@
 # % represents a common/repeated pattern
+
+data/%/rrnDB.unique.align data/%/data.count_table : code/count_unique.sh\
+				data/%/rrnDB.align\
+				code/mothur/mothur
+	code/count_unique.sh $@
