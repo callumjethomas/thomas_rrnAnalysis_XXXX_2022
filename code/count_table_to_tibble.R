@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript --vanilla
+#!/usr/bin/env -S Rscript --vanilla
 
 # name: count_table_to_tibble.R
 
@@ -19,7 +19,6 @@ bigfile <- read_tsv(input_file) %>%
   rename(asv=Representative_Sequence) %>%
   select(-total)
 print("File imported.\n")
-gc()
 
 print("Splitting TSV file into quarters to reduce memory usage:")
 quarter <- as.integer((nrow(bigfile))/4)
@@ -35,7 +34,6 @@ bigfile_last <- bigfile[-(1:(quarter*4)),]
 print("Remainder.\n")
 
 rm(bigfile)
-gc()
 
 print("Pivoting and filtering quarters:")
 bigfile_1_4 <- bigfile_1_4 %>%
@@ -57,14 +55,12 @@ bigfile_4_4 <- bigfile_4_4 %>%
   pivot_longer(cols=-asv, names_to="genome", values_to="count") %>%
   filter(count != 0)
   print("Fourth quarter.")
-  
+
 bigfile_last <- bigfile_last %>%
   pivot_longer(cols=-asv, names_to="genome", values_to="count") %>%
   filter(count != 0)
   print("Remainder.\n")
 
-gc()
-  
 print("Binding resulting tibbles back together.\n")
 bigfile <- rbind(bigfile_1_4, bigfile_2_4, bigfile_3_4, bigfile_4_4, bigfile_last)
 
