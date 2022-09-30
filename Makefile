@@ -35,7 +35,8 @@ data/%/rrnDB.align data/%/rrnDB.bad.accnos : code/extract_region.sh\
 	./code/extract_region.sh $@
 # % represents a common/repeated pattern
 
-data/%/rrnDB.unique.align data/%/data.count_table : code/count_unique.sh\
+data/%/rrnDB.unique.align data/%/data.count_tibble : code/count_unique.sh\
+				code/count_table_to_tibble.R\
 				data/%/rrnDB.align\
 				code/mothur/mothur
 	code/count_unique.sh $@

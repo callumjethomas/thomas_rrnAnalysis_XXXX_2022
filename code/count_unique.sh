@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
+# name: count_unique.sh
+# Takes in fasta file, gets unique sequences and counts them. Then converts the
+# count table to a tidy data format (tibble).
+
 # author: Callum Thomas
-# dependencies: data/<region/rrnDB.align
-# input:  data/<region>/rrnDB.unique.count_table
-#         data/<region>/rrnDB.unique.align
-# output: data/<region>/rrnDB.unique.align,
-#         data/<region>/rrnDB.unique.count_table
+# dependencies: code/mothur/mothur.exe
+#               code/count_table_to_tibble.R
+# input:  target - either the count_tibble or align file
+# output: target - either the count_tibble or align file
 
 TARGET=$1
 STUB=`echo $TARGET | sed -E "s/(.*rrnDB).*/\1/"`
@@ -23,13 +26,18 @@ sed -E "s/>.*\|(.*)\|(.*)\|.*\|(.*)_.$/>\1\|\2\|\3/" $ALIGN > $TEMP_ALIGN
 grep ">" $TEMP_ALIGN | sed -E "s/>((.*)\|.*\|.*)/\1 \2/" > $TEMP_GROUPS
 
 code/mothur/mothur.exe "#unique.seqs(fasta=$TEMP_ALIGN, format=name);
-  count.seqs(group=$TEMP_GROUPS, compress=FALSE)"
+  count.seqs(group=$TEMP_GROUPS);
+  count.seqs(count=$STUB_TEMP.count_table, compress=false)"
 
 if [[ $? -eq 0 ]]
 then
+
+  # Convert full count table to tidy format.
+  code/count_table_to_tibble.R $STUB_TEMP.full.count_table $STUB.count_tibble
+  echo "Count tibble created."
+
   # Rename files to keep
   mv $STUB_TEMP.unique.align $STUB.unique.align
-  mv $STUB_TEMP.count_table $STUB.unique.count_table
 
   # Garbage collection
   rm $STUB_TEMP.*
