@@ -34,13 +34,19 @@ then
 
   # Convert full count table to tidy format.
   code/count_table_to_tibble.R $STUB_TEMP.full.count_table $STUB.count_tibble
-  echo "Count tibble created."
 
-  # Rename files to keep
-  mv $STUB_TEMP.unique.align $STUB.unique.align
+  if [[ $? -eq 0 ]]
+  then
 
-  # Garbage collection
-  rm $STUB_TEMP.*
+    # Rename files to keep
+    mv $STUB_TEMP.unique.align $STUB.unique.align
+
+    # Garbage collection
+    rm $STUB_TEMP.*
+
+  else
+    echo "ERROR: R script failed to run properly."
+  fi
 
 else
   echo "ERROR: mothur failed to run properly."
