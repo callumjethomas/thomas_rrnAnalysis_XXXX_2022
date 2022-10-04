@@ -41,6 +41,13 @@ data/%/rrnDB.unique.align data/%/data.count_tibble : code/count_unique.sh\
 				code/mothur/mothur
 	code/count_unique.sh $@
 
+data/processed/rrnDB.count_tibble : code/combine_count_tibbles.R\
+		data/v19/rrnDB.count_tibble\
+		data/v4/rrnDB.count_tibble\
+		data/v34/rrnDB.count_tibble\
+		data/v45/rrnDB.count_tibble
+	$^
+
 README.md : README.Rmd
 	R -e "library(markdown); render('README.Rmd')"
 

@@ -12,27 +12,19 @@ library(scales)
 
 ### Need to determine the number of *rrn* operons across genomes.
 
-Our analysis will use full length sequences:
-
 ``` r
-fl <- read_tsv(here("data/v19/rrnDB.count_tibble"))
+count_tibble <- read_tsv(here("data/processed/rrnDB.count_tibble"),
+                         col_types = "cccd")
 ```
 
-    ## Rows: 82533 Columns: 3
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: "\t"
-    ## chr (2): asv, genome
-    ## dbl (1): count
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-How many rrn copies are in each genome?
+How many rrn copies are in each genome for the full-length sequences
+(v1-9)?
 
 ``` r
-fl %>% 
+count_tibble %>% 
+  filter(region == "v19") %>%
   group_by(genome) %>% 
-  summarise(n_rrn = sum(count)) %>%
+  summarise(n_rrn = sum(count), .groups="drop") %>%
   ggplot(aes(x = n_rrn)) + geom_histogram(binwidth = 1)
 ```
 
@@ -41,9 +33,10 @@ fl %>%
 What do these numbers look like as a fraction of all genomes?
 
 ``` r
-fl %>% 
+count_tibble %>% 
+  filter(region == "v19") %>% 
   group_by(genome) %>% 
-  summarise(n_rrn = sum(count)) %>%
+  summarise(n_rrn = sum(count), .groups="drop") %>%
   count(n_rrn) %>% 
   mutate(fraction = n/sum(n))
 ```
@@ -73,163 +66,70 @@ we need to know whether they all have the same ASV. Otherwise, we run
 the risk of splitting a single genome into multiple ASVs.
 
 ``` r
-fl %>%
-  group_by(genome) %>% 
-  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
-  group_by(n_rrn) %>% 
+count_tibble %>% 
+  group_by(region, genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count), .groups="drop") %>% 
+  group_by(region, n_rrn) %>% 
   summarise(med_n_asv = median(n_asv),
+            mean_n_asv = mean(n_asv),
             lq_n_asv = quantile(n_asv, prob=0.25),
             uq_n_asv = quantile(n_asv, prob = 0.75))
 ```
 
-    ## # A tibble: 21 × 4
-    ##    n_rrn med_n_asv lq_n_asv uq_n_asv
-    ##    <dbl>     <dbl>    <dbl>    <dbl>
-    ##  1     1         1        1        1
-    ##  2     2         1        1        2
-    ##  3     3         1        1        2
-    ##  4     4         1        1        2
-    ##  5     5         3        1        4
-    ##  6     6         2        1        4
-    ##  7     7         4        3        6
-    ##  8     8         5        3        7
-    ##  9     9         7        5        8
-    ## 10    10         7        4        9
-    ## # … with 11 more rows
+    ## # A tibble: 84 × 6
+    ## # Groups:   region [4]
+    ##    region n_rrn med_n_asv mean_n_asv lq_n_asv uq_n_asv
+    ##    <chr>  <dbl>     <dbl>      <dbl>    <dbl>    <dbl>
+    ##  1 v19        1         1       1           1        1
+    ##  2 v19        2         1       1.28        1        2
+    ##  3 v19        3         1       1.40        1        2
+    ##  4 v19        4         1       1.82        1        2
+    ##  5 v19        5         3       2.71        1        4
+    ##  6 v19        6         2       2.76        1        4
+    ##  7 v19        7         4       4.25        3        6
+    ##  8 v19        8         5       4.72        3        7
+    ##  9 v19        9         7       6.31        5        8
+    ## 10 v19       10         7       6.25        4        9
+    ## # … with 74 more rows
 
 ``` r
-fl %>%
-  group_by(genome) %>% 
-  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
-  ggplot(aes(x = n_rrn, y = n_asv)) + geom_smooth(method = "lm")
+count_tibble %>%
+  group_by(region, genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count), .groups="drop") %>% 
+  ggplot(aes(x = n_rrn, y = n_asv, color = region)) + geom_smooth(method = "lm")
 ```
-
-    ## `geom_smooth()` using formula 'y ~ x'
 
 ![](2022-09-30_genome_sens_spec_files/figure-gfm/n_ASV-1.png)<!-- -->
 
 Surprisingly, the number of ASVs increases at a rate of about 2 ASVs per
-3 copies of the *rrn* operon in the genome.
+3 copies of the *rrn* operon in the genome for the full-length sequence.
+The sub- regions of the gene have fewer ASVs per *rrn* operon.
 
 ### How many genomes does each ASV appear in?
 
 Are ASVs unique to genomes they are found in?
 
 ``` r
-(ASV_per_genome <- fl %>% 
-  group_by(asv) %>% 
+(ASV_per_genome <- count_tibble %>% 
+  group_by(region, asv) %>% 
   summarise(n_genome = n()) %>% 
   count(n_genome) %>% 
-  mutate(fraction = n/sum(n)))
+  mutate(fraction = n/sum(n)) %>% 
+  filter(n_genome == 1))
 ```
 
-    ## # A tibble: 141 × 3
-    ##    n_genome     n fraction
-    ##       <int> <int>    <dbl>
-    ##  1        1 32421  0.826  
-    ##  2        2  3328  0.0847 
-    ##  3        3  1144  0.0291 
-    ##  4        4   605  0.0154 
-    ##  5        5   337  0.00858
-    ##  6        6   252  0.00642
-    ##  7        7   166  0.00423
-    ##  8        8   112  0.00285
-    ##  9        9    99  0.00252
-    ## 10       10    82  0.00209
-    ## # … with 131 more rows
+    ## # A tibble: 4 × 4
+    ## # Groups:   region [4]
+    ##   region n_genome     n fraction
+    ##   <chr>     <int> <int>    <dbl>
+    ## 1 v19           1 32421    0.826
+    ## 2 v34           1 11718    0.780
+    ## 3 v4            1  7165    0.751
+    ## 4 v45           1  9423    0.779
 
 We see that (for full-length sequences) 82.56 % of ASVs were unique to a
-genome.
-
-#### Does sensitivity and specificity change if we look at a shorter region?
-
-Previously we looked at full-length sequences that span the entire range
-of the gene (V1-9). What if we just look at the V4 region?
-
-We know that the V4 region is less diverse than the full-length
-sequence, so does the number of ASVs per genome differ? Are ASVs as
-specific in this region?
-
-``` r
-v4 <- read_tsv(here("data/v4/rrnDB.count_tibble"))
-```
-
-    ## Rows: 35811 Columns: 3
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: "\t"
-    ## chr (2): asv, genome
-    ## dbl (1): count
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-
-``` r
-v4 %>%
-  group_by(genome) %>% 
-  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
-  group_by(n_rrn) %>% 
-  summarise(mean_n_asv = mean(n_asv),
-            lq_n_asv = quantile(n_asv, prob=0.25),
-            uq_n_asv = quantile(n_asv, prob = 0.75))
-```
-
-    ## # A tibble: 21 × 4
-    ##    n_rrn mean_n_asv lq_n_asv uq_n_asv
-    ##    <dbl>      <dbl>    <dbl>    <dbl>
-    ##  1     1       1           1        1
-    ##  2     2       1.08        1        1
-    ##  3     3       1.09        1        1
-    ##  4     4       1.16        1        1
-    ##  5     5       1.31        1        1
-    ##  6     6       1.25        1        1
-    ##  7     7       1.37        1        1
-    ##  8     8       1.55        1        2
-    ##  9     9       1.60        1        2
-    ## 10    10       1.80        1        2
-    ## # … with 11 more rows
-
-``` r
-v4 %>%
-  group_by(genome) %>% 
-  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
-  ggplot(aes(x = n_rrn, y = n_asv)) + geom_smooth(method = "lm")
-```
-
-    ## `geom_smooth()` using formula 'y ~ x'
-
-![](2022-09-30_genome_sens_spec_files/figure-gfm/V4-1.png)<!-- -->
-
-The number of ASVs per copy of the *rrn* operon is lower than for
-full-length sequences. We find 1.5 ASVs per 10 copies of the *rrn*
-operon.
-
-How many genomes does each ASV appear in for the V4 region?
-
-``` r
-(v4_ASV_per_genome <- v4 %>% 
-  group_by(asv) %>% 
-  summarise(n_genome = n()) %>% 
-  count(n_genome) %>% 
-  mutate(fraction = n/sum(n)))
-```
-
-    ## # A tibble: 111 × 3
-    ##    n_genome     n fraction
-    ##       <int> <int>    <dbl>
-    ##  1        1  7165  0.751  
-    ##  2        2  1022  0.107  
-    ##  3        3   399  0.0418 
-    ##  4        4   209  0.0219 
-    ##  5        5   129  0.0135 
-    ##  6        6    94  0.00986
-    ##  7        7    62  0.00650
-    ##  8        8    46  0.00482
-    ##  9        9    39  0.00409
-    ## 10       10    36  0.00378
-    ## # … with 101 more rows
-
-We find that about 75.14% of ASVs from the V4 region are specific to one
-genome.
+genome. For the sub-regions, the percentage of ASVs was lower: 78% for
+region 3-4, 75.14% for region 4 and 77.95% for region 4-5.
 
 #### To be determined:
 
