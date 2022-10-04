@@ -40,3 +40,6 @@ data/%/rrnDB.unique.align data/%/data.count_tibble : code/count_unique.sh\
 				data/%/rrnDB.align\
 				code/mothur/mothur
 	code/count_unique.sh $@
+
+README.md : README.Rmd
+	R -e "library(markdown); render('README.Rmd')"

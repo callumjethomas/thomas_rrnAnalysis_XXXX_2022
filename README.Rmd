@@ -1,0 +1,29 @@
+---
+title: "Code Club Project: Assessing whether intra- and inter-genomic variation hinder utility of ASVs."
+author: "Callum Thomas"
+date: '2022-10-04'
+output: 
+  github_document:
+    html_preview: false 
+---
+
+Developed over a series of *Code Club* episodes led by Pat Schloss ([Riffomonas](https://www.youtube.com/c/RiffomonasProject)) to answer an important question in microbiology and become comfortable using tools to develop reproducible research practices.
+
+```{r library_calls, include=FALSE}
+library(tidyverse)
+library(data.table)
+library(rmarkdown)
+```
+
+### Dependencies:
+- `mothur` [v.1.48.0](https://github.com/mothur/mothur/releases/tag/v1.48.0), `code/install_mothur.sh` installs mothur.
+- `r R.version.string`
+  - `tidyverse` [v.`r packageVersion("tidyverse")`]
+  - `data.table` [v.`r packageVersion("data.table")`]
+  - `rmarkdown` [v.`r packageVersion("rmarkdown")`]
+
+### My computer:
+
+```{r sessionInfo}
+sessionInfo()
+```
