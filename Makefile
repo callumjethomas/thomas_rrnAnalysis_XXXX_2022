@@ -30,8 +30,8 @@ data/raw/rrnDB-5.8_16S_rRNA.align : code/align_sequences.sh\
 	./code/align_sequences.sh
 
 data/%/rrnDB.align data/%/rrnDB.bad.accnos : code/extract_region.sh\
-					data/raw/rrnDB-5.8_16S_rRNA.align\
-					code/mothur/mothur.exe
+				data/raw/rrnDB-5.8_16S_rRNA.align\
+				code/mothur/mothur.exe
 	./code/extract_region.sh $@
 # % represents a common/repeated pattern
 
@@ -43,3 +43,8 @@ data/%/rrnDB.unique.align data/%/data.count_tibble : code/count_unique.sh\
 
 README.md : README.Rmd
 	R -e "library(markdown); render('README.Rmd')"
+
+exploratory/2022-09-30_genome_sens_spec.md :  exploratory/2022-09-30_genome_sens_spec.Rmd\
+				data/v19/rrnDB.count_tibble\
+				data/v4/rrnDB.count_tibble
+	R -e "library(markdown); render('exploratory/2022-09-30_genome_sens_spec.Rmd')"

@@ -1,0 +1,129 @@
+---
+title: "Analysing the sensitivity and specificity of ASVs for discriminating between genomes"
+author: "Callum Thomas"
+date: "2022-09-30"
+output: 
+  github_document:
+    html_preview: false
+---
+
+```{r library loading, message=F, warning=F}
+library(tidyverse)
+library(here)
+library(scales)
+```
+### Need to determine the number of *rrn* operons across genomes.
+
+Our analysis will use full length sequences:
+
+```{r import}
+fl <- read_tsv(here("data/v19/rrnDB.count_tibble"))
+```
+
+How many rrn copies are in each genome?
+
+```{r n_rrn}
+fl %>% 
+  group_by(genome) %>% 
+  summarise(n_rrn = sum(count)) %>%
+  ggplot(aes(x = n_rrn)) + geom_histogram(binwidth = 1)
+```
+
+What do these numbers look like as a fraction of all genomes?
+```{r fraction_rrn}
+fl %>% 
+  group_by(genome) %>% 
+  summarise(n_rrn = sum(count)) %>%
+  count(n_rrn) %>% 
+  mutate(fraction = n/sum(n))
+```
+
+We see that most genomes actually have more than one copy of the *rrn* operon. 
+I wonder if those different copies are the same sequence/ASV?
+
+### What is the number of ASVs per genome?
+
+Considering that most genomes have multiple copies of the *rrn* operon, we need
+to know whether they all have the same ASV. Otherwise, we run the risk of 
+splitting a single genome into multiple ASVs.
+
+```{r n_ASV}
+fl %>%
+  group_by(genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
+  group_by(n_rrn) %>% 
+  summarise(med_n_asv = median(n_asv),
+            lq_n_asv = quantile(n_asv, prob=0.25),
+            uq_n_asv = quantile(n_asv, prob = 0.75))
+
+fl %>%
+  group_by(genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
+  ggplot(aes(x = n_rrn, y = n_asv)) + geom_smooth(method = "lm")
+
+```
+
+Surprisingly, the number of ASVs increases at a rate of about 2 ASVs per 3
+copies of the *rrn* operon in the genome.
+
+### How many genomes does each ASV appear in?
+
+Are ASVs unique to genomes they are found in?
+
+```{r specificity}
+(ASV_per_genome <- fl %>% 
+  group_by(asv) %>% 
+  summarise(n_genome = n()) %>% 
+  count(n_genome) %>% 
+  mutate(fraction = n/sum(n)))
+```
+
+We see that (for full-length sequences) `r format(ASV_per_genome$fraction[1]*100, digits =4)`
+% of ASVs were unique to a genome.
+
+#### Does sensitivity and specificity change if we look at a shorter region? 
+
+Previously we looked at full-length sequences that span the entire range of the 
+gene (V1-9). What if we just look at the V4 region?
+
+We know that the V4 region is less diverse than the full-length sequence, so
+does the number of ASVs per genome differ? Are ASVs as specific in this region?
+
+```{r V4}
+v4 <- read_tsv(here("data/v4/rrnDB.count_tibble"))
+
+
+v4 %>%
+  group_by(genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
+  group_by(n_rrn) %>% 
+  summarise(mean_n_asv = mean(n_asv),
+            lq_n_asv = quantile(n_asv, prob=0.25),
+            uq_n_asv = quantile(n_asv, prob = 0.75))
+
+v4 %>%
+  group_by(genome) %>% 
+  summarise(n_asv = n(), n_rrn = sum(count)) %>% 
+  ggplot(aes(x = n_rrn, y = n_asv)) + geom_smooth(method = "lm")
+```
+
+The number of ASVs per copy of the *rrn* operon is lower than for full-length
+sequences. We find 1.5 ASVs per 10 copies of the *rrn* operon.
+
+How many genomes does each ASV appear in for the V4 region?
+
+```{r V4_specificity}
+(v4_ASV_per_genome <- v4 %>% 
+  group_by(asv) %>% 
+  summarise(n_genome = n()) %>% 
+  count(n_genome) %>% 
+  mutate(fraction = n/sum(n)))
+```
+
+We find that about `r format(v4_ASV_per_genome$fraction[1]*100, digits =4)`% of
+ASVs from the V4 region are specific to one genome.
+
+#### To be determined:
+- Can we correct for overrepresentation?
+- Consider analysis at species, genus, family, etc. levels?
+- Consider more broad definition of an ASV
