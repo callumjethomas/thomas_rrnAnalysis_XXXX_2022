@@ -23,6 +23,15 @@ data/raw/rrnDB-5.8_pantaxa_stats_NCBI.tsv : code/get_rrnDB_files.sh
 data/raw/rrnDB-5.8_pantaxa_stats_RDP.tsv : code/get_rrnDB_files.sh
 	./code/get_rrnDB_files.sh $@
 
+data/references/sp_ssp_lookup.tsv : code/get_sp_ssp_lookup.sh
+	./code/get_sp_ssp_lookup.sh
+
+data/references/genome_id_taxonomy.tsv : code/join_genome_id_taxonomy.R\
+		data/raw/rrnDB-5.8.tsv\
+		data/references/sp_ssp_lookup\
+		data/raw/rrnDB-5.8_pantaxa_stats_NCBI.tsv
+	./code/join_genome_id_taxonomy.R
+
 data/raw/rrnDB-5.8_16S_rRNA.align : code/align_sequences.sh\
 				data/references/silva_seed/silva.seed_v138_1.align\
 				data/raw/rrnDB-5.8_16S_rRNA.fasta\
