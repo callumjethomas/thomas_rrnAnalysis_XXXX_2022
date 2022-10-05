@@ -1,0 +1,26 @@
+---
+title: "Analysing distribution of genomes across different taxonomic ranks"
+author: "Callum Thomas"
+date: '2022-10-05'
+output:
+  github_document:
+    html_preview: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r libraries, message=F, warning=F}
+library(tidyverse)
+library(here)
+```
+
+```{r join}
+metadata <- read_tsv(here("data/references/genome_id_taxonomy.tsv"),
+                     col_types = cols(.default = col_character()))
+
+asv <- read_tsv(here("data/processed/rrnDB.count_tibble"),
+                col_types = cols(.default = col_character(),
+                                 count = col_integer()))
+
+metadata_asv <- inner_join(metadata, asv, by=c("genome_id" = "genome"))
+```
