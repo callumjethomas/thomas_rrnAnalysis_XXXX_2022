@@ -66,3 +66,8 @@ exploratory/2022-09-30_genome_sens_spec.md :  exploratory/2022-09-30_genome_sens
 			data/v19/rrnDB.count_tibble\
 			data/v4/rrnDB.count_tibble
 	R -e "library(markdown); render('exploratory/2022-09-30_genome_sens_spec.Rmd')"
+
+exploratory/2022-10-05_taxa_representation.md :  exploratory/2022-10-05_taxa_representation.Rmd\
+			data/references/genome_id_taxonomy.tsv\
+			data/processed/rrnDB.count_tibble
+	R -e "library(markdown); render('exploratory/2022-09-30_genome_sens_spec.Rmd')"

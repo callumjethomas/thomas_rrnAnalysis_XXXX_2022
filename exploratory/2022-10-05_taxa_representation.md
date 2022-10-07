@@ -1,20 +1,14 @@
----
-title: "Analysing distribution of genomes across different taxonomic ranks"
-author: "Callum Thomas"
-date: '2022-10-05'
-output:
-  github_document:
-    html_preview: false
-editor_options: 
-  chunk_output_type: console
----
+Analysing distribution of genomes across different taxonomic ranks
+================
+Callum Thomas
+2022-10-05
 
-```{r libraries, message=F, warning=F}
+``` r
 library(tidyverse)
 library(here)
 ```
 
-```{r join_metadata_asv}
+``` r
 metadata <- read_tsv(here("data/references/genome_id_taxonomy.tsv"),
                      col_types = cols(.default = col_character())) %>% 
   mutate(strain = if_else(species == scientific_name, NA_character_, scientific_name)) %>% 
@@ -34,7 +28,7 @@ metadata_asv <- inner_join(metadata, asv, by=c("genome_id" = "genome"))
 
 ### Find the number of taxa within each taxonomic rank
 
-```{r n_taxa_per_rank, message=F}
+``` r
 n_taxa_per_rank <- metadata_asv %>% 
   filter(region == "v19") %>% 
   group_by(rank, taxon) %>% 
@@ -56,7 +50,9 @@ n_taxa_per_rank %>%
     theme_classic()
 ```
 
-- Even if we require that every taxonomic group had at least 5 genomes, there
-would be a few hundred species represented.
-- Not sure the strain level data is complete, there may be taxa in the "strain"
-rank that did not have the strain correctly indicated.
+![](2022-10-05_taxa_representation_files/figure-gfm/n_taxa_per_rank-1.png)<!-- -->
+
+-   Even if we require that every taxonomic group had at least 5
+    genomes, there would be a few hundred species represented.
+-   Not sure the strain level data is complete, there may be taxa in the
+    “strain” rank that did not have the strain correctly indicated.
