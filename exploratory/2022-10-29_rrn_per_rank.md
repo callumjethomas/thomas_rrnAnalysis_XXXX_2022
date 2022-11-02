@@ -12,13 +12,8 @@ library(here)
 metadata <- read_tsv(here("data/references/genome_id_taxonomy.tsv"),
                      col_types = cols(.default = col_character())) %>% 
   mutate(strain = if_else(species == scientific_name, NA_character_, scientific_name)) %>% 
-  select(-scientific_name)# %>% 
-  #pivot_longer(-genome_id, names_to="rank", values_to="taxon") %>% 
-  #drop_na(taxon) %>% 
-  #mutate(rank = factor(rank,
-  #                     levels = c("kingdom", "phylum", "class", "order", 
-  #                               "family", "genus", "species", "strain")))
-  #
+  select(-scientific_name)
+
 asv <- read_tsv(here("data/processed/rrnDB.count_tibble"),
                 col_types = cols(.default = col_character(),
                                  count = col_integer()))
@@ -55,9 +50,17 @@ rrn_per_taxon <- metadata_asv %>%
   group_by(rank, taxon) %>% 
   summarise(mean_rrns = mean(mean_rrns), .groups = "drop")
 
+mean_of_means <- rrn_per_taxon %>% 
+  group_by(rank) %>% 
+  summarise(mean_mean_rrns = mean(mean_rrns), .groups = "drop")
+
 rrn_per_taxon %>% 
   ggplot(aes(x = rank, y = mean_rrns)) +
-  geom_jitter(width = 0.3, alpha = 0.3) +
+  geom_jitter(width = 0.3, color = "grey") +
+  geom_segment(data = mean_of_means,
+               aes(x = 1:7-0.3, xend = 1:7+0.3,
+                   y = mean_mean_rrns, yend = mean_mean_rrns),
+               color = "red", group = 1, size = 2) +
   theme_classic() +
   labs(x = NULL, 
        y = "Mean number of rrn copies per genome",
