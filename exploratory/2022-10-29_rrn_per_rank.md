@@ -73,3 +73,33 @@ rrn_per_taxon %>%
 Bacteria have more copies than Archaea, even after correcting for number
 of genomes per species. There was wide variation in the number of *rrn*
 operons per taxonomic group.
+
+Here’s another way of looking at the data:
+
+``` r
+library(ggridges)
+```
+
+    ## Warning: package 'ggridges' was built under R version 4.2.2
+
+``` r
+median_of_means <- rrn_per_taxon %>% 
+  group_by(rank) %>% 
+  summarise(median_mean_rrns = median(mean_rrns), .groups = "drop")
+
+n_ranks <- nrow(median_of_means)
+
+rrn_per_taxon %>% 
+  ggplot(aes(y = rank, x = mean_rrns)) +
+  geom_density_ridges(stat="binline", binwidth = 1, scale = 0.9) +
+  geom_point(data = median_of_means,
+               aes(x = median_mean_rrns, y = 1:n_ranks+0.1),
+               color = "red", group = 1, size = 2) +
+  theme_classic() +
+  labs(y = NULL, 
+       x = "Mean number of rrn copies per genome",
+       title = "The distribution of rrn copies per genome is fairly consistent across ranks.",
+       subtitle = "Each point represents a single taxon within a rank, numbers based on\n an average species copy number. The dot represents the median for the rank.")
+```
+
+![](2022-10-29_rrn_per_rank_files/figure-gfm/plots-1.png)<!-- -->
